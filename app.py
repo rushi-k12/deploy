@@ -9,8 +9,12 @@ import numpy as np
 from flask import Flask,request,jsonify,render_template
 import pickle
 
+from flask import Flask, render_template, request, make_response
+import pickle
+import numpy as np
+
 app = Flask(__name__)
-model = pickle.load(open('model.pkl' , 'rb'))
+model = pickle.load(open('model.pkl', 'rb'))
 
 @app.route('/')
 def home():
@@ -18,12 +22,18 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    # Disable caching
+    response = make_response(render_template('index.html', prediction_text=''))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+
     int_features = []
     for value in request.form.values():
         # Convert "yes" to 1 and "no" to 0, if applicable
-        if value.lower() == 'yes' or 'semi-furnished':
+        if value.lower() == 'yes' or value.lower() == 'semi-furnished':
             int_value = 1
-        elif value.lower() == 'no' or 'unfurnished':
+        elif value.lower() == 'no' or value.lower() == 'unfurnished':
             int_value = 0
         elif value.lower() == 'furnished':
             int_value = 2
